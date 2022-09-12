@@ -41,4 +41,23 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
+SeedData();
+
 app.Run();
+
+
+void SeedData()
+{
+    using var scope = app.Services.CreateScope();
+    var service = scope.ServiceProvider;
+
+    try
+    {
+        var context = service.GetRequiredService<SchoolContext>();
+        DbInitializer.Initialize(context);
+    }
+    catch (Exception)
+    {
+
+    }
+}
