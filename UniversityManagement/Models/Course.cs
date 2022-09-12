@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace UniversityManagement.Models
 {
@@ -6,6 +7,8 @@ namespace UniversityManagement.Models
     {
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
         public int CourseID { get; set; }
+
+        [StringLength(50)]
         public string Title { get; set; }
         public int Credits { get; set; }
 
