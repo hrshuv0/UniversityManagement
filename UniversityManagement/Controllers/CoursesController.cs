@@ -39,6 +39,7 @@ namespace UniversityManagement.Controllers
 
             var course = await _context.Courses
                 .Include(c => c.Department)
+                .AsNoTracking()
                 .FirstOrDefaultAsync(m => m.CourseID == id);
             if (course == null)
             {
@@ -92,11 +93,11 @@ namespace UniversityManagement.Controllers
         }
 
         // POST: Courses/Edit/5
-        [HttpPost]
+        [HttpPost, ActionName("Edit")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("CourseID,Title,Credits,DepartmentID")] Course course)
+        public async Task<IActionResult> EditPost(int? id/*, [Bind("CourseID,Title,Credits,DepartmentID")] Course course*/)
         {
-            if (id != course.CourseID)
+            /*if (id != course.CourseID)
             {
                 return NotFound();
             }
@@ -120,9 +121,29 @@ namespace UniversityManagement.Controllers
                     }
                 }
                 return RedirectToAction(nameof(Index));
+            }*/
+
+            if (id is null)
+                return NotFound();
+
+            var courseToUpdate = await _context.Courses.FirstOrDefaultAsync(c => c.CourseID == id);
+
+            if(await TryUpdateModelAsync<Course>(courseToUpdate!,"",c => c.Credits, c => c.DepartmentID, c => c.Title))
+            {
+                try
+                {
+                    await _context.SaveChangesAsync();
+                }
+                catch (Exception)
+                {
+                    ModelState.AddModelError("", "Unable to save changes.");
+                }
+                return RedirectToAction(nameof(Index));
             }
-            PopulateDepartmentDropDownList(course.DepartmentID);
-            return View(course);
+
+
+            PopulateDepartmentDropDownList(courseToUpdate!.DepartmentID);
+            return View(courseToUpdate);
         }
 
         // GET: Courses/Delete/5
