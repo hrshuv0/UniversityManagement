@@ -250,7 +250,17 @@ namespace UniversityManagement.Controllers
             {
                 return Problem("Entity set 'SchoolContext.Instructors'  is null.");
             }
-            var instructor = await _context.Instructors.FindAsync(id);
+
+            var instructor = await _context.Instructors
+                .Include(i => i.CourseAssignments)
+                .SingleAsync(i => i.ID == id);
+
+            var departmentList = await _context.Departments
+                .Where(d => d.InstructorID == id)
+                .ToListAsync();
+            departmentList.ForEach(d => d.InstructorID = null);
+
+
             if (instructor != null)
             {
                 _context.Instructors.Remove(instructor);
