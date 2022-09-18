@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -15,10 +16,12 @@ namespace UniversityManagement.Controllers
     public class InstructorsController : Controller
     {
         private readonly SchoolContext _context;
+        private readonly ILogger<InstructorsController> _logger;
 
-        public InstructorsController(SchoolContext context)
+        public InstructorsController(SchoolContext context, ILogger<InstructorsController> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         // GET: Instructors
@@ -42,8 +45,7 @@ namespace UniversityManagement.Controllers
             if(id != null)
             {
                 ViewData["InstructorID"] = id.Value;
-                Instructor instructor = instructorsVm.Instructors
-                    .Where(i => i.ID == id.Value).Single();
+                Instructor instructor = instructorsVm.Instructors.Single(i => i.ID == id.Value);
 
                 instructorsVm.Courses = instructor.CourseAssignments!.Select(s => s.Course);
             }
@@ -51,8 +53,7 @@ namespace UniversityManagement.Controllers
             if(courseId is not null)
             {
                 ViewData["CourseId"] = courseId.Value;
-                instructorsVm.Enrollments = instructorsVm.Courses
-                    .Where(x => x.CourseID == courseId).Single().Enrollments!;
+                instructorsVm.Enrollments = instructorsVm.Courses.Single(x => x.CourseID == courseId).Enrollments!;
             }
 
               
@@ -62,7 +63,7 @@ namespace UniversityManagement.Controllers
         // GET: Instructors/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null || _context.Instructors == null)
+            if (id == null)
             {
                 return NotFound();
             }
@@ -111,6 +112,7 @@ namespace UniversityManagement.Controllers
 
             PopulateAssignedCourseData(instructor);
 
+            _logger.LogInformation("Instructor Created with name {InstructorFullName}", instructor.FullName);
             return View(instructor);
         }
 
